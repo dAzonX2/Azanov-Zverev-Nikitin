@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "698183912821",
+    "project_id": "appirl",
+    "storage_bucket": "appirl.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:698183912821:android:b0a53645efd99d7b93173c",
+        "android_client_info": {
+          "package_name": "com.example.irl.registration"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "698183912821-55du06oog6ekatf3l99vfanp0bjokntc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqfjPgDo3h7Xy5krEAu3O9kJcXqCRL18s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "698183912821-55du06oog6ekatf3l99vfanp0bjokntc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
