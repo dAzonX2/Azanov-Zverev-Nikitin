@@ -88,7 +88,7 @@ public class OTPFragment extends Fragment {
 
         firebaseAuth = FirebaseAuth.getInstance();
 
-        tv_phone.setText("Код подтверждения был отправлен на ваш номер +7 " +phone);
+        tv_phone.setText("Код подтверждения был отправлен на ваш номер " +phone);
 
         sendOTP();
 
