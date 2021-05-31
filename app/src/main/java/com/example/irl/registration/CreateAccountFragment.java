@@ -18,12 +18,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.irl.R;
+import com.google.android.gms.common.internal.Objects;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.SignInMethodQueryResult;
 
 import java.io.FileReader;
+import java.util.regex.Pattern;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -35,9 +38,9 @@ public class CreateAccountFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static final String EMAIL_REGEX = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
-
-    private EditText email, password, confirmPassword;
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+    private EditText email, phone, password, confirmPassword;
     private Button createAccountBtn;
     private ProgressBar progressBar;
     private TextView loginTV;
@@ -71,12 +74,21 @@ public class CreateAccountFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 email.setError(null);
+                phone.setError(null);
                 password.setError(null);
                 confirmPassword.setError(null);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
                     if(email.getText().toString().isEmpty()){
-                        email.setError("required!");
+                        email.setError("Обязательно!");
+                        return;
+
+                    }
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+                    if(phone.getText().toString().isEmpty()){
+                        phone.setError("Обязательно!");
                         return;
 
                     }
@@ -84,22 +96,28 @@ public class CreateAccountFragment extends Fragment {
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
                     if(password.getText().toString().isEmpty()){
-                        password.setError("required!");
+                        password.setError("Обязательно!");
                         return;
 
                     }
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
                     if(confirmPassword.getText().toString().isEmpty()){
-                        confirmPassword.setError("required!");
+                        confirmPassword.setError("Обязательно!");
                         return;
 
                     }
                 }
-                if(!email.getText().toString().matches(EMAIL_REGEX)){
+                if(!VALID_EMAIL_ADDRESS_REGEX.matcher(email.getText().toString()).find()){
                     email.setError("Пожалуйста, введите существующую почту");
                     return;
                 }
+
+             //   if (phone.getText().toString().length() != 10){
+             //       confirmPassword.setError("Введите корректный номер");
+              //      return;
+              //  }
+//
                 if (!password.getText().toString().equals(confirmPassword.getText().toString())){
                     confirmPassword.setError("Пароли не совпадают!");
                     return;
@@ -114,6 +132,7 @@ public class CreateAccountFragment extends Fragment {
     private void init (View view){
 
         email = view.findViewById(R.id.email);
+        phone = view.findViewById(R.id.phone);
         password = view.findViewById(R.id.password);
         confirmPassword = view.findViewById(R.id.confirm_password);
         createAccountBtn = view.findViewById(R.id.create_account_btn);
@@ -123,17 +142,23 @@ public class CreateAccountFragment extends Fragment {
 
     private void createAccount(){
         progressBar.setVisibility(View.VISIBLE);
-
-        firebaseAuth.createUserWithEmailAndPassword(email.getText().toString(), password.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+        firebaseAuth.fetchSignInMethodsForEmail(email.getText().toString()).addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
             @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
+            public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
                 if (task.isSuccessful()){
-                    ((RegisterActivity)getActivity()).setFrament(new OTPFragment());
-                }else {
-                    String error = task.getException().getMessage();
-                    Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
-                }
+                    if (task.getResult().getSignInMethods().isEmpty()){
+                        ((RegisterActivity)getActivity()).setFrament(new OTPFragment(email.getText().toString(),phone.getText().toString(),password.getText().toString()));
 
+                    }else {
+                        email.setError("Почта уже используется!");
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
+
+                } else {
+                   String error = task.getException().getMessage();
+                    Toast.makeText(getContext(), error , Toast.LENGTH_SHORT).show();
+                }
+                progressBar.setVisibility(View.INVISIBLE);
             }
         });
     }
