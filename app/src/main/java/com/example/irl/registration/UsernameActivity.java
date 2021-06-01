@@ -14,7 +14,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.irl.MainActivity;
 import com.example.irl.R;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -49,16 +48,13 @@ public class UsernameActivity extends AppCompatActivity {
                          .withPermissions(
                                  Manifest.permission.READ_EXTERNAL_STORAGE,
                                  Manifest.permission.WRITE_EXTERNAL_STORAGE
-                         ).withListener(new MultiplePermissionsListener() {
-                     @Override
-                     public void onPermissionsChecked(MultiplePermissionsReport report) {
-
+                                 ).withListener(new MultiplePermissionsListener() {
+                     @Override public void onPermissionsChecked(MultiplePermissionsReport report) {
                          if (report.areAllPermissionsGranted()){
                              selectImage();
-                         }else {
-                             Toast.makeText(UsernameActivity.this, "please allow Permissions", Toast.LENGTH_SHORT).show();
+                         } else {
+                             Toast.makeText(UsernameActivity.this, "Пожалуйста сделайте это", Toast.LENGTH_LONG).show();
                          }
-
                      }
 
                      @Override
@@ -66,10 +62,8 @@ public class UsernameActivity extends AppCompatActivity {
 
                      }
 
-                     @Override
-                     public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {/* ... */}
-                 }).check();
 
+                 }).check();
              }
          });
     }
@@ -100,11 +94,11 @@ public class UsernameActivity extends AppCompatActivity {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
-                Uri photoUrl = result.getUri();
+                Uri photoUri = result.getUri();
 
                 Glide
                         .with(this)
-                        .load(photoUrl)
+                        .load(photoUri)
                         .centerCrop()
                         .placeholder(R.drawable.profileplaceholder)
                         .into(profileImageView);
