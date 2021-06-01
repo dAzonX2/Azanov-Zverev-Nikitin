@@ -1,6 +1,7 @@
 package com.example.irl.registration;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,8 +15,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.irl.MainActivity;
 import com.example.irl.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.List;
+
+import static com.example.irl.registration.CreateAccountFragment.VALID_EMAIL_ADDRESS_REGEX;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -44,6 +58,60 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         init (view);
+
+        loginBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                emailORpfone.setError(null);
+                password.setError(null);
+
+
+                if (emailORpfone.getText().toString().isEmpty()){
+                    emailORpfone.setError("Повторите");
+                    return;
+                }
+                if (password.getText().toString().isEmpty()){
+                    password.setError("Повторите");
+                    return;
+                }
+
+                if(VALID_EMAIL_ADDRESS_REGEX.matcher(emailORpfone.getText().toString()).find()){
+                    login(emailORpfone.getText().toString());
+
+                } else if (emailORpfone.getText().toString().matches("\\d{10}")) {
+
+                    FirebaseFirestore.getInstance().collection("users").whereEqualTo("phone", emailORpfone.getText().toString()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull @org.jetbrains.annotations.NotNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()){
+                                List<DocumentSnapshot> document = task.getResult().getDocuments();
+                                if (document.isEmpty()){
+                                    emailORpfone.setError("Телефон не обноружен");
+                                    progressBar.setVisibility(View.INVISIBLE);
+                                    return;
+
+                                }else {
+                                    String email = document.get(0).get("email").toString();
+                                    login(email);
+
+                                }
+
+                            }else {
+                                String error = task.getException().getMessage();
+                                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                                progressBar.setVisibility(View.INVISIBLE);
+                            }
+                        }
+                    });
+
+                } else {
+                    emailORpfone.setError("Повторите ввод коректного Email или Телефона");
+                    return;
+                }
+
+            }
+        });
+
         forgotPassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,5 +136,24 @@ public class LoginFragment extends Fragment {
         progressBar =view.findViewById(R.id.progressbar);
         createAccountTV =view.findViewById(R.id.create_account_text);
         forgotPassword =view.findViewById(R.id.forgot_password);
+    }
+
+    private void login(String email) {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        firebaseAuth.signInWithEmailAndPassword(email, password.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull @org.jetbrains.annotations.NotNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    Intent mainIntent = new Intent(getContext(), MainActivity.class);
+                    startActivity(mainIntent);
+                    getActivity().finish();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
     }
 }
