@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.example.irl.MainActivity;
 import com.example.irl.R;
+import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
@@ -34,7 +35,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -235,9 +239,28 @@ public class OTPFragment extends Fragment {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if(task.isSuccessful()){
-                                        Intent mainIntent = new Intent(getContext(), MainActivity.class);
-                                        startActivity(mainIntent);
-                                        getActivity().finish();
+
+                                        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+
+                                        Map<String,Object> map = new HashMap<>();
+                                        map.put("email", email);
+                                        map.put("phone", phone);
+
+                                        firebaseFirestore.collection( "users").add(map).addOnCanceledListener(new OnCanceledListener() {
+                                            @Override
+                                            public void onCanceled() {
+                                                if (task.isSuccessful()){
+                                                    Intent mainIntent = new Intent(getContext(), MainActivity.class);
+                                                    startActivity(mainIntent);
+                                                    getActivity().finish();
+                                                } else {
+                                                    String error =task.getException().getMessage();
+                                                    Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                                                    progressBar.setVisibility(View.INVISIBLE);
+                                                }
+                                            }
+                                        });
+
                                     }else {
                                         String error =task.getException().getMessage();
                                         Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
