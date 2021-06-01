@@ -76,33 +76,34 @@ public class LoginFragment extends Fragment {
                 }
 
                 if(VALID_EMAIL_ADDRESS_REGEX.matcher(emailORpfone.getText().toString()).find()){
+                    progressBar.setVisibility(View.VISIBLE);
                     login(emailORpfone.getText().toString());
 
                 } else if (emailORpfone.getText().toString().matches("\\d{10}")) {
+                    progressBar.setVisibility(View.VISIBLE);
 
-                    FirebaseFirestore.getInstance().collection("users").whereEqualTo("phone", emailORpfone.getText().toString()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull @org.jetbrains.annotations.NotNull Task<QuerySnapshot> task) {
-                            if (task.isSuccessful()){
-                                List<DocumentSnapshot> document = task.getResult().getDocuments();
-                                if (document.isEmpty()){
-                                    emailORpfone.setError("Телефон не обноружен");
-                                    progressBar.setVisibility(View.INVISIBLE);
-                                    return;
+                    FirebaseFirestore.getInstance().collection("users").whereEqualTo("phone", emailORpfone.getText().toString()).get()
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        List<DocumentSnapshot> document = task.getResult().getDocuments();
+                                        if (document.isEmpty()) {
+                                            emailORpfone.setError("номер телефона не найден");
+                                            progressBar.setVisibility(View.INVISIBLE);
+                                            return;
+                                        } else {
+                                            String email = document.get(0).get("email").toString();
+                                            login(email);
+                                        }
+                                    } else {
+                                            String error = task.getException().getMessage();
+                                            Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                                            progressBar.setVisibility(View.INVISIBLE);
+                                        }
+                                    }
 
-                                }else {
-                                    String email = document.get(0).get("email").toString();
-                                    login(email);
-
-                                }
-
-                            }else {
-                                String error = task.getException().getMessage();
-                                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
-                                progressBar.setVisibility(View.INVISIBLE);
-                            }
-                        }
-                    });
+                            });
 
                 } else {
                     emailORpfone.setError("Повторите ввод коректного Email или Телефона");
@@ -142,17 +143,18 @@ public class LoginFragment extends Fragment {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseAuth.signInWithEmailAndPassword(email, password.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
-            public void onComplete(@NonNull @org.jetbrains.annotations.NotNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()){
                     Intent mainIntent = new Intent(getContext(), MainActivity.class);
                     startActivity(mainIntent);
                     getActivity().finish();
-
-                } else {
-                    String error = task.getException().getMessage();
-                    Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
-                    progressBar.setVisibility(View.INVISIBLE);
+                 }else {
+                     String error = task.getException().getMessage();
+                     Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                     progressBar.setVisibility(View.INVISIBLE);
                 }
+
+
             }
         });
     }
