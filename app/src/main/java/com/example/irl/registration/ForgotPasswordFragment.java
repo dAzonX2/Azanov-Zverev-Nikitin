@@ -48,8 +48,9 @@ public class ForgotPasswordFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         init (view);
+
+        firebaseAuth = FirebaseAuth.getInstance();
 
         resetBtn.setOnClickListener(new View.OnClickListener() {
             @Override
