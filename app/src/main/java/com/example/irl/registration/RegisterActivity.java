@@ -19,11 +19,15 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         frameLayout = findViewById(R.id.framelayout);
-        setFrament(new LoginFragment());
+        setFrament(new CreateAccountFragment());
     }
 
-    private void setFrament(Fragment fragment) {
+    public void setFrament(Fragment fragment) {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+        if (fragment instanceof ForgotPasswordFragment || fragment instanceof OTPFragment){
+            fragmentTransaction.addToBackStack(null);
+        }
         fragmentTransaction.replace(frameLayout.getId(),fragment);
         fragmentTransaction.commit();
     }
