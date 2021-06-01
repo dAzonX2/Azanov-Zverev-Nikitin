@@ -250,8 +250,8 @@ public class OTPFragment extends Fragment {
                                             @Override
                                             public void onCanceled() {
                                                 if (task.isSuccessful()){
-                                                    Intent mainIntent = new Intent(getContext(), MainActivity.class);
-                                                    startActivity(mainIntent);
+                                                    Intent usernameIntent = new Intent(getContext(), UsernameActivity.class);
+                                                    startActivity(usernameIntent);
                                                     getActivity().finish();
                                                 } else {
                                                     String error =task.getException().getMessage();

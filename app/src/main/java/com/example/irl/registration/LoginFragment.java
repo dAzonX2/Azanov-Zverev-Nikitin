@@ -145,8 +145,8 @@ public class LoginFragment extends Fragment {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()){
-                    Intent mainIntent = new Intent(getContext(), MainActivity.class);
-                    startActivity(mainIntent);
+                    Intent userIntent = new Intent(getContext(), UsernameActivity.class);
+                    startActivity(userIntent);
                     getActivity().finish();
                  }else {
                      String error = task.getException().getMessage();
